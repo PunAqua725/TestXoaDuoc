@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Sói - Test Realtime Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🐺 Đấu Trường Ma Sói</h1>
+    
+    <div id="login-area">
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="Nhập tên của bạn (VD: Tiên Tri)" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <input type="text" id="room-id" placeholder="Nhập ID Phòng (VD: room123)" autocomplete="off">
+        </div>
+        <button id="join-btn" onclick="joinRoom()">Vào Phòng</button>
+    </div>
+
+    <div id="game-area">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0;">Phòng: <span id="display-room" style="color: #f39c12;"></span></h3>
+            <button onclick="leaveRoom()" style="background: #c0392b; padding: 5px 10px;">Rời phòng</button>
+        </div>
+        
+        
+        <div class="input-group">
+            <input type="text" id="message-input" placeholder="Nhắn tin cho mọi người..." onkeypress="handleKeyPress(event)" autocomplete="off">
+            <button onclick="sendMessage()">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ws = null;
+    let myName = "";
+
+    function joinRoom() {
+        const playerName = document.getElementById("player-name").value.trim();
+        const roomId = document.getElementById("room-id").value.trim();
+
+        if (!playerName || !roomId) {
+            alert("Vui lòng nhập đầy đủ Tên và ID Phòng!");
+            return;
+        }
+
+        myName = playerName;
+        document.getElementById("display-room").innerText = roomId;
+
+        // Kết nối tới WebSocket của FastAPI
+        const wsUrl = `ws://localhost:8000/ws/room/${roomId}/${playerName}`;
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function() {
+            document.getElementById("login-area").style.display = "none";
+            document.getElementById("game-area").style.display = "block";
+            document.getElementById("chat-box").innerHTML = ""; // Xóa chat cũ
+        };
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const chatBox = document.getElementById("chat-box");
+            const div = document.createElement("div");
+
+            if (data.system) {
+                div.className = "msg system";
+                div.innerText = data.message;
+            } else {
+                const isMe = data.player === myName;
+                div.className = `msg ${isMe ? 'me' : 'other'}`;
+                div.innerHTML = `<div class="username">${data.player}</div>${data.message}`;
+            }
+
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight; // Tự cuộn xuống dòng mới nhất
+        };
+
+        ws.onclose = function() {
+            alert("Đã mất kết nối tới máy chủ.");
+            leaveRoom();
+        };
+    }
+
+    function sendMessage() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        const input = document.getElementById("message-input");
+        const msg = input.value.trim();
+        if (msg) {
+            ws.send(msg);
+            input.value = "";
+        }
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+
+    function leaveRoom() {
+        if (ws) ws.close();
+        document.getElementById("login-area").style.display = "block";
+        document.getElementById("game-area").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
