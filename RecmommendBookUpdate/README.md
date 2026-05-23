@@ -18,20 +18,39 @@ RecmommendBookUpdate/
 │   ├── main.py              # FastAPI server & API endpoints
 │   ├── recommender.py       # ML engine (TF-IDF + Cosine Similarity)
 │   ├── database.py          # SQLAlchemy models (User, SearchHistory, Favorite)
-│   └── requirements.txt     # Python dependencies
+│   └── requirements.txt     # 📦 Installation Guide
 ├── frontend/
-│   ├── index.html           # Trang đăng nhập / đăng ký
-│   ├── app.html             # Trang tìm kiếm sách (sau đăng nhập)
-│   ├── admin.html           # Admin Dashboard
-│   ├── style.css            # CSS (Glassmorphism, dark mode)
-│   └── script.js            # Client-side logic
+│   ├── index.html           # Main user interface
+│   ├── app.html             # App dashboard page
+│   ├── admin.html           # Admin panel page
+│   ├── script.js            # Frontend app logic
+│   └── style.css            # Styling and theme
 ├── data/
-│   └── goodreads_data.csv   # Dataset sách từ Goodreads
-├── README.md
-└── PROPOSAL.md
+│   └── goodreads_data.csv   # Dataset for recommendations
+├── scripts/
+│   └── install.ps1          # Windows install + run script
+└── README.md                # Project documentation
 ```
 
----
+## 1️⃣ Install Script
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+Nếu bị chặn script:
+Set-ExecutionPolicy -Scope Process Bypass.\scripts\install.ps1
+The script will:
+- Create a Python virtual environment.
+- Install backend dependencies from `backend/requirements.txt`.
+- Initialise the SQLite database (creates a default admin account).
+- Start the FastAPI backend on **http://localhost:8000**.
+- Open the frontend (`frontend/index.html`) in your default browser.
+
+## 2️⃣ Test Accounts
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Demo User | `Pun` | `1478` |
+
+
 
 ## ⚙️ Công nghệ sử dụng
 
@@ -57,6 +76,7 @@ RecmommendBookUpdate/
 
 ```bash
 cd backend
+pip install -r requirements.txt
 python -m pip install -r requirements.txt
 py -m pip install -r requirements.txt(nếu trên lỗi thì gõ lệnh này)
 ```
@@ -67,6 +87,8 @@ py -m pip install -r requirements.txt(nếu trên lỗi thì gõ lệnh này)
 cd backend
 python -m uvicorn main:app --host 0.0.0.0 --port 8000
 py -m uvicorn main:app --host 0.0.0.0 --port 8000(nếu trên lỗi thì gõ lệnh này)
+uvicorn main:app --reload
+python main.py
 ```
 
 > - API: `http://localhost:8000`
